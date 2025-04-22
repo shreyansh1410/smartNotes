@@ -1,36 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SmartNotes
+
+SmartNotes is a personal note-taking and AI-powered summarization app built with Next.js 15, Supabase, and Google Gemini AI. It lets authenticated users create, edit, delete, and summarize notes with a title and body.
+
+## Features
+
+- Email/password and Google OAuth authentication via Supabase
+- Create, edit, and delete notes (title + content)
+- AI-powered summarization using Google Gemini Generative AI
+- Client and Server Components separation (Next.js App Router)
+- Optimistic updates and caching with TanStack React Query
+- Responsive UI with Tailwind CSS and shadcn/ui components
+
+## Tech Stack
+
+- Next.js 15 (App Router)
+- React 19 & TypeScript
+- Supabase (Auth & Postgres)
+- Google Generative AI (Gemini 2.0 Flash)
+- TanStack React Query
+- Tailwind CSS, clsx, tailwind-merge
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+
+- Node.js 18+
+- npm or pnpm
+- Supabase project with Auth enabled and a `notes` table
+- Google Cloud OAuth credentials (for Google sign-in)
+- Google Generative AI API key (Gemini)
+
+### Installation
+
+```bash
+git clone <repo-url>
+cd smartnotes
+npm install
+```
+
+### Environment Variables
+
+Create a `.env.local` in the project root with:
+
+```ini
+NEXT_PUBLIC_SUPABASE_URL=https://<your-supabase>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+GEMINI_API_KEY=<your-google-gemini-api-key>
+```
+
+### Database Schema
+
+Ensure your Supabase `notes` table has columns:
+
+- `id`: uuid, primary key, default `uuid_generate_v4()`
+- `user_id`: uuid, foreign key to `auth.users`
+- `title`: text
+- `content`: text
+- `summary`: text (nullable)
+- `created_at`: timestamp, default `now()`
+
+### Run Locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## API Route
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `POST /api/summarize` — Summarizes note content via Google Generative AI.
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```text
+smartnotes/
+├─ app/
+│  ├─ api/summarize/route.ts   # AI summarization endpoint
+│  ├─ layout.tsx               # Root layout (wraps client providers)
+│  ├─ page.tsx                 # Home (protected NotesPage)
+│  └─ globals.css
+├─ components/
+│  ├─ ClientProviders.tsx      # Client Component wrapper for QueryClient & Auth
+│  ├─ AuthForm.tsx             # Login/signup form
+│  ├─ RequireAuth.tsx          # Route protection
+│  └─ NotesPage.tsx            # Main notes UI
+├─ lib/
+│  ├─ supabaseClient.ts        # Supabase client
+│  ├─ reactQueryClient.ts      # React Query client config
+│  └─ authProvider.tsx         # Auth context/provider
+├─ .env.local                  # Environment variables
+├─ package.json
+├─ tsconfig.json
+└─ tailwind.config.js
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run dev` — Runs dev server
+- `npm run build` — Builds for production
+- `npm run start` — Starts production server
+- `npm run lint` — Runs ESLint
