@@ -2,7 +2,7 @@
 import RequireAuth from "@/components/RequireAuth";
 import NotesPage from "@/components/NotesPage";
 
-export default function Home() {
+export default function Notes() {
   return (
     <RequireAuth>
       <NotesPage />
