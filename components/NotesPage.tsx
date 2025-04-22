@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
+// Types for notes
+type Note = { id: string; title: string; content: string; summary: string | null; created_at: string; };
+
 export default function NotesPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
@@ -18,7 +21,7 @@ export default function NotesPage() {
   const [summarizingId, setSummarizingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const { data: notes, isLoading } = useQuery({
+  const { data: notes = [], isLoading } = useQuery<Note[], Error>({
     queryKey: ["notes", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -56,13 +59,7 @@ export default function NotesPage() {
         throw authError;
       }
       
-      try {
-        console.log("Attempting to insert note:", { 
-          user_id: user.id, 
-          title, 
-          content 
-        });
-        
+      try {        
         const { data, error } = await supabase
           .from("notes")
           .insert([{
@@ -87,14 +84,15 @@ export default function NotesPage() {
         }
         
         return data;
-      } catch (err: any) {
-        console.error("Error details:", err);
+      } catch (error: unknown) {
+        console.error("Error details:", error);
         
+        const message = error instanceof Error ? error.message : String(error);
         if (!errorMessage) {
-          setErrorMessage(err.message || "Failed to add note. Please try again.");
+          setErrorMessage(message || "Failed to add note. Please try again.");
         }
         
-        throw err;
+        throw error;
       }
     },
     onSuccess: () => {
@@ -234,7 +232,7 @@ export default function NotesPage() {
         <div>Loading notes...</div>
       ) : notes && notes.length > 0 ? (
         <ul className="space-y-4">
-          {notes.map((note: any) => (
+          {notes.map((note: Note) => (
             <li key={note.id} className="border p-4 rounded-lg bg-background">
               {editingId === note.id ? (
                 <form

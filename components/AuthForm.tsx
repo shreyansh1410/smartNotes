@@ -23,8 +23,9 @@ export default function AuthForm() {
         const { error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
       }
-    } catch (err: any) {
-      setError(err.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      setError(message);
     } finally {
       setLoading(false);
     }
