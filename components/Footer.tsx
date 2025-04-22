@@ -6,7 +6,7 @@ export default function Footer() {
   const githubUrl = "https://github.com/shreyansh1410";
 
   return (
-    <footer className="border-t py-4 text-center text-sm text-gray-500">
+    <footer className="border-t py-4 text-center text-sm text-gray-500 mt-auto">
       <p>
         &copy; {year}{" "}
         <Link href={githubUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center hover:underline">

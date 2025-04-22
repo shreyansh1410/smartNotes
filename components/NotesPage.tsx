@@ -20,6 +20,8 @@ export default function NotesPage() {
   const [editContent, setEditContent] = useState("");
   const [summarizingId, setSummarizingId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
 
   const { data: notes = [], isLoading } = useQuery<Note[], Error>({
     queryKey: ["notes", user?.id],
@@ -184,59 +186,76 @@ export default function NotesPage() {
 });
 
   return (
-    <div className="max-w-2xl mx-auto py-10">
-      {user && (
-        <h2 className="text-center text-xl mb-4">
-          Hello, {user.user_metadata?.firstName ?? user.email}
-        </h2>
-      )}
-      <h1 className="text-2xl font-bold mb-6">Your Notes</h1>
-      
+    <div className="max-w-6xl mx-auto py-10">
       {!user && (
         <div className="text-amber-600 p-4 bg-amber-50 border border-amber-200 rounded mb-4">
           Please log in to manage your notes.
         </div>
       )}
+      {notes.length > 0 && (
+        <>
+          {user && (
+            <h2 className="text-center text-xl mb-4">
+              Hello, {user.user_metadata?.firstName ?? user.email}
+            </h2>
+          )}
+          <h1 className="text-2xl font-bold mb-6 ml-10">Your Notes</h1>
+        </>
+      )}
       
-      <form
-        onSubmit={e => {
-          e.preventDefault();
-          addNote.mutate({ title: noteTitle, content: noteContent });
-        }}
-        className="flex flex-col gap-2 mb-8"
-      >
-        <Input
-          value={noteTitle}
-          onChange={e => setNoteTitle(e.target.value)}
-          placeholder="Title"
-          required
-          className="mb-2"
-        />
-        <Textarea
-          value={noteContent}
-          onChange={e => setNoteContent(e.target.value)}
-          placeholder="Write a new note..."
-          required
-          className="mb-2 min-h-32"
-        />
-        <Button 
-          type="submit" 
-          disabled={addNote.isPending || !user} 
-          className="self-start"
+      {showForm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setShowForm(false)}
         >
-          {addNote.isPending ? "Adding..." : "Add Note"}
-        </Button>
-        {errorMessage && (
-          <div className="text-red-500 text-sm mt-2 p-2 bg-red-50 border border-red-200 rounded">
-            {errorMessage}
+          <div
+            className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md"
+            onClick={e => e.stopPropagation()}
+          >
+            <form
+              onSubmit={e => {
+                e.preventDefault();
+                addNote.mutate({ title: noteTitle, content: noteContent });
+                setShowForm(false);
+              }}
+              className="flex flex-col gap-4"
+            >
+              <Input
+                value={noteTitle}
+                onChange={e => setNoteTitle(e.target.value)}
+                placeholder="Title"
+                required
+                className="mb-2"
+              />
+              <Textarea
+                value={noteContent}
+                onChange={e => setNoteContent(e.target.value)}
+                placeholder="Write a new note..."
+                required
+                className="mb-2 min-h-32"
+              />
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  disabled={addNote.isPending || !user}
+                >
+                  {addNote.isPending ? "Adding..." : "Add Note"}
+                </Button>
+              </div>
+              {errorMessage && (
+                <div className="text-red-500 text-sm mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                  {errorMessage}
+                </div>
+              )}
+            </form>
           </div>
-        )}
-      </form>
+        </div>
+      )}
       
       {isLoading ? (
         <div>Loading notes...</div>
-      ) : notes && notes.length > 0 ? (
-        <ul className="space-y-4">
+      ) : notes.length > 0 ? (
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mx-10 min-w-32">
           {notes.map((note: Note) => (
             <li key={note.id} className="border p-4 rounded-lg bg-background">
               {editingId === note.id ? (
@@ -282,7 +301,16 @@ export default function NotesPage() {
                     </>
                   )}
                   <h4 className="font-semibold mb-1">Content</h4>
-                  <div className="mb-4 whitespace-pre-wrap">{note.content}</div>
+                  <div className={`mb-4 whitespace-pre-wrap ${expandedId === note.id ? '' : 'max-h-40 overflow-hidden'}`}>{note.content}</div>
+                  {expandedId !== note.id ? (
+                    <button onClick={() => setExpandedId(note.id)} className="text-blue-500 text-sm mb-2">
+                      Read More
+                    </button>
+                  ) : (
+                    <button onClick={() => setExpandedId(null)} className="text-blue-500 text-sm mb-2">
+                      Show Less
+                    </button>
+                  )}
                   <div className="flex gap-2">
                     <Button
                       size="sm"
@@ -315,11 +343,12 @@ export default function NotesPage() {
             </li>
           ))}
         </ul>
-      ) : (
-        <div className="text-center py-6 text-gray-500">
-          No notes yet. Add your first note above!
-        </div>
-      )}
+      ) : null}
+      <button onClick={() => setShowForm(true)} className="fixed bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-full shadow-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+        </svg>
+      </button>
     </div>
   );
 }

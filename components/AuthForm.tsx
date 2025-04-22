@@ -3,8 +3,10 @@ import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useRouter } from 'next/navigation';
 
 export default function AuthForm() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState<string>("");
   const [password, setPassword] = useState("");
@@ -34,6 +36,8 @@ export default function AuthForm() {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        router.push('/');
+        return;
       } else {
         const { error: signupError } = await supabase.auth.signUp({
           email,
