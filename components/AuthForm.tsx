@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 
 export default function AuthForm() {
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState<string>("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -20,6 +21,10 @@ export default function AuthForm() {
       setError("Invalid email address.");
       return;
     }
+    if (mode === "signup" && !firstName.trim()) {
+      setError("First name is required.");
+      return;
+    }
     if (password.length < 6) {
       setError("Password must be at least 6 characters.");
       return;
@@ -30,7 +35,11 @@ export default function AuthForm() {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { error: signupError } = await supabase.auth.signUp({ email, password });
+        const { error: signupError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { firstName } }
+        });
         if (signupError) {
           const msg = signupError.message.toLowerCase();
           if (msg.includes("already registered") || msg.includes("already exists")) {
@@ -66,7 +75,17 @@ export default function AuthForm() {
 
   return (
     <div className="max-w-sm w-full mx-auto p-6 rounded-lg border bg-background">
+      <h1 className="text-3xl font-bold text-center mb-4">SmartNotes</h1>
       <form className="space-y-4" onSubmit={handleSubmit}>
+        {mode === "signup" && (
+          <Input
+            placeholder="First Name"
+            type="text"
+            value={firstName}
+            onChange={e => setFirstName(e.target.value)}
+            required
+          />
+        )}
         <Input
           placeholder="Email"
           type="email"

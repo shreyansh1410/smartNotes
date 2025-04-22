@@ -185,6 +185,11 @@ export default function NotesPage() {
 
   return (
     <div className="max-w-2xl mx-auto py-10">
+      {user && (
+        <h2 className="text-center text-xl mb-4">
+          Hello, {user.user_metadata?.firstName ?? user.email}
+        </h2>
+      )}
       <h1 className="text-2xl font-bold mb-6">Your Notes</h1>
       
       {!user && (
