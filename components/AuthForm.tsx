@@ -9,19 +9,23 @@ export default function AuthForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "signup">("login");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setSuccessMessage(null);
     try {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
+        const { error: signupError } = await supabase.auth.signUp({ email, password });
+        if (signupError) throw signupError;
+        setSuccessMessage("Signup successful! Please check your email to confirm your account.");
+        return;
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
@@ -63,6 +67,7 @@ export default function AuthForm() {
           required
         />
         {error && <div className="text-red-500 text-sm">{error}</div>}
+        {successMessage && <div className="text-green-600 text-sm mt-2">{successMessage}</div>}
         <Button type="submit" className="w-full" disabled={loading}>
           {loading ? "Loading..." : mode === "login" ? "Login" : "Sign Up"}
         </Button>
