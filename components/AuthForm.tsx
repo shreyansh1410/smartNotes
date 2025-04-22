@@ -14,16 +14,31 @@ export default function AuthForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError(null);
     setSuccessMessage(null);
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setError("Invalid email address.");
+      return;
+    }
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+    setLoading(true);
     try {
       if (mode === "login") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
         const { error: signupError } = await supabase.auth.signUp({ email, password });
-        if (signupError) throw signupError;
+        if (signupError) {
+          const msg = signupError.message.toLowerCase();
+          if (msg.includes("already registered") || msg.includes("already exists")) {
+            setError("You already have an account. Please sign in.");
+            return;
+          }
+          throw signupError;
+        }
         setSuccessMessage("Signup successful! Please check your email to confirm your account.");
         return;
       }
